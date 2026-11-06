@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "seed:leaves": "node src/modules/leaves/seedLeaveDemoData.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

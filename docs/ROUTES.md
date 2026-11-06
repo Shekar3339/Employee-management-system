@@ -1,6 +1,15 @@
 # EmployeeHub Route Map
 
-All backend routes are prefixed with `/api`. Frontend page paths have not yet been agreed in this contract; this document does not create any frontend routes.
+All backend routes are prefixed with `/api`.
+
+## Frontend pages
+
+| Route | Responsibility | Access |
+| --- | --- | --- |
+| `/login` | Sign in with an active account | Public |
+| `/admin/dashboard` | Administrator landing page | `ADMIN` |
+| `/employees` | Manage employee records and accounts | `ADMIN` |
+| `/employee/profile` | Employee profile and leave management | `EMPLOYEE` |
 
 ## Authentication
 
@@ -15,14 +24,14 @@ Shared middleware is exported from `server/src/shared/middleware/auth.js` as `au
 
 ## Employee Management
 
-| Method | Route | Responsibility |
-| --- | --- | --- |
-| `GET` | `/api/employees` | List employees |
-| `POST` | `/api/employees` | Create an employee through the agreed employee creation workflow |
-| `GET` | `/api/employees/me` | Get the current employee record |
-| `GET` | `/api/employees/:id` | Get an employee by ID |
-| `PUT` | `/api/employees/:id` | Update an employee by ID |
-| `PATCH` | `/api/employees/:id/status` | Update an employee status |
+| Method | Route | Responsibility | Authentication |
+| --- | --- | --- | --- |
+| `GET` | `/api/employees` | List employees | `ADMIN` |
+| `POST` | `/api/employees` | Create an employee account and record | `ADMIN` |
+| `GET` | `/api/employees/me` | Get the current employee record | `EMPLOYEE` |
+| `GET` | `/api/employees/:id` | Get an employee by ID | `ADMIN` |
+| `PUT` | `/api/employees/:id` | Update an employee by ID | `ADMIN` |
+| `PATCH` | `/api/employees/:id/status` | Update an employee status | `ADMIN` |
 
 ## Department Management
 
@@ -35,12 +44,12 @@ Shared middleware is exported from `server/src/shared/middleware/auth.js` as `au
 
 ## Leave Management
 
-| Method | Route | Responsibility |
-| --- | --- | --- |
-| `POST` | `/api/leaves` | Submit a leave request |
-| `GET` | `/api/leaves/mine` | Get the authenticated employee's leave requests |
-| `GET` | `/api/leaves` | List leave requests |
-| `PATCH` | `/api/leaves/:id/status` | Update a leave request status |
+| Method | Route | Responsibility | Authentication |
+| --- | --- | --- | --- |
+| `POST` | `/api/leaves` | Submit a leave request | `EMPLOYEE` |
+| `GET` | `/api/leaves/mine` | Get the authenticated employee's leave requests | `EMPLOYEE` |
+| `GET` | `/api/leaves` | List leave requests | `ADMIN` |
+| `PATCH` | `/api/leaves/:id/status` | Update a leave request status | `ADMIN` |
 
 ## Dashboard
 
@@ -48,8 +57,4 @@ Shared middleware is exported from `server/src/shared/middleware/auth.js` as `au
 | --- | --- | --- |
 | `GET` | `/api/dashboard/stats` | Get dashboard statistics |
 
-## Access-control boundary
-
-JWT authentication and role checks apply to protected routes. `EMPLOYEE` users must not access admin APIs or pages. This route map deliberately does not assign an endpoint-by-endpoint admin/employee matrix outside the two auth routes, because that matrix has not been specified in the agreed requirements.
-
-No endpoints other than those listed in this document are agreed.
+Employees must not access admin APIs or pages.

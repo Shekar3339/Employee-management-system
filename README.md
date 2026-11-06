@@ -49,6 +49,23 @@ npm run server
 
 The API runs at `http://localhost:5000`. Verify it at `GET /api/health`.
 
+Authentication is available at `/api/auth`; the frontend provides `/login`,
+`/admin/dashboard`, and `/employee/profile`. The Leave Management API at
+`/api/leaves` and protected frontend routes use the AuthContext JWT. Sign in
+with an active account to access the employee leave page.
+
+To create a separate demo department, employee account, and three leave
+requests, run:
+
+```bash
+npm --prefix server run seed:leaves
+```
+
+The seed command creates only the reserved `demo.employee@employeehub.local`
+account and clearly labeled records. It never removes existing records and
+prints a one-hour test JWT for that demo employee. The demo password is random
+and not printed; use the temporary token to test the leave page.
+
 ## Project structure
 
 - `client/` — React + Vite frontend
