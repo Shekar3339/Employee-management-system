@@ -1,31 +1,127 @@
-.app-shell {
+.app-layout {
   display: grid;
   min-height: 100vh;
-  place-content: center;
-  justify-items: center;
+  grid-template-columns: 15rem 1fr;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1.5rem 1rem;
+  color: #e2e8f0;
+  background: #0f172a;
+}
+
+.brand {
+  padding: 0 0.75rem;
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.sidebar nav {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
   gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  color: #cbd5e1;
+  text-decoration: none;
+}
+
+.nav-link.active,
+.nav-link:hover {
+  color: #ffffff;
+  background: #1e293b;
+}
+
+.app-layout__content {
+  min-width: 0;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  min-height: 4.5rem;
+  padding: 0 2rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.role-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  color: #1d4ed8;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #dbeafe;
+}
+
+.app-layout__main {
   padding: 2rem;
+}
+
+.status-message,
+.error-message,
+.placeholder-page,
+.public-page {
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.875rem;
+  background: #ffffff;
+}
+
+.error-message {
+  color: #991b1b;
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.error-message button {
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  border-radius: 0.5rem;
+  color: #ffffff;
+  cursor: pointer;
+  background: #dc2626;
+}
+
+.public-page {
+  width: min(100% - 2rem, 32rem);
+  margin: 15vh auto;
   text-align: center;
 }
 
-.app-shell svg {
-  color: #2563eb;
-}
+@media (max-width: 700px) {
+  .app-layout {
+    grid-template-columns: 1fr;
+  }
 
-.app-shell h1,
-.app-shell p {
-  margin: 0;
-}
+  .sidebar {
+    gap: 1rem;
+  }
 
-.app-shell h1 {
-  font-size: clamp(2rem, 7vw, 3.5rem);
-}
+  .sidebar nav {
+    display: flex;
+    overflow-x: auto;
+  }
 
-.app-shell p {
-  color: #475569;
-  font-size: 1.125rem;
-}
+  .nav-link {
+    white-space: nowrap;
+  }
 
-.app-shell span {
-  color: #64748b;
+  .app-layout__main,
+  .navbar {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
 }
