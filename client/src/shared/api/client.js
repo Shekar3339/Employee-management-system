@@ -4,12 +4,18 @@ const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
 })
 
-export function setAuthToken(token) {
-  if (token) {
-    apiClient.defaults.headers.common.Authorization = `Bearer ${token}`
-  } else {
-    delete apiClient.defaults.headers.common.Authorization
-  }
+let authToken = null
+
+export function setApiAuthToken(token) {
+  authToken = token
 }
+
+apiClient.interceptors.request.use((config) => {
+  if (authToken) {
+    config.headers.Authorization = `Bearer ${authToken}`
+  }
+
+  return config
+})
 
 export default apiClient

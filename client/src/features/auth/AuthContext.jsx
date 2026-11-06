@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import apiClient, { setAuthToken } from '../../shared/api/client.js'
+import apiClient, { setApiAuthToken } from '../../shared/api/client.js'
 import { AuthContext } from './auth-context.js'
 
 function getErrorMessage(error, fallback) {
@@ -12,7 +12,7 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false)
 
   const logout = useCallback(() => {
-    setAuthToken(null)
+    setApiAuthToken(null)
     setToken(null)
     setUser(null)
   }, [])
@@ -28,7 +28,7 @@ export function AuthProvider({ children }) {
         throw new Error('Unable to sign in. Please try again.')
       }
 
-      setAuthToken(nextToken)
+      setApiAuthToken(nextToken)
       setToken(nextToken)
       setUser(nextUser)
       return nextUser
@@ -78,4 +78,3 @@ export function AuthProvider({ children }) {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
-
