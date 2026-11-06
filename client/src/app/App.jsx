@@ -2,6 +2,7 @@ import { BriefcaseBusiness, LogOut } from 'lucide-react'
 import { Link, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { EmployeesPage } from '../features/employees/index.js'
 import { LoginPage, ProtectedRoute, useAuth } from '../features/auth/index.js'
+import DepartmentManagement from '../features/departments/index.js'
 import LeaveManagement from '../features/leaves/LeaveManagement.jsx'
 import './App.css'
 
@@ -44,9 +45,15 @@ function AdminDashboard() {
       <p>Welcome, {user.name}</p>
       <span>{user.email}</span>
       <Link to="/employees">Manage employees</Link>
+      <Link to="/departments">Manage departments</Link>
       <SignOutButton />
     </main>
   )
+}
+
+function DepartmentManagementRoute() {
+  const { user } = useAuth()
+  return <DepartmentManagement canManage={user.role === 'ADMIN'} />
 }
 
 function EmployeeProfile() {
@@ -74,27 +81,35 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route
         path="/admin/dashboard"
-        element={
+        element={(
           <ProtectedRoute allowedRoles={['ADMIN']}>
             <AdminDashboard />
           </ProtectedRoute>
-        }
+        )}
       />
       <Route
         path="/employees"
-        element={
+        element={(
           <ProtectedRoute allowedRoles={['ADMIN']}>
             <EmployeesPage />
           </ProtectedRoute>
-        }
+        )}
+      />
+      <Route
+        path="/departments"
+        element={(
+          <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+            <DepartmentManagementRoute />
+          </ProtectedRoute>
+        )}
       />
       <Route
         path="/employee/profile"
-        element={
+        element={(
           <ProtectedRoute allowedRoles={['EMPLOYEE']}>
             <EmployeeProfile />
           </ProtectedRoute>
-        }
+        )}
       />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

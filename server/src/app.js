@@ -1,6 +1,7 @@
 import cors from 'cors'
 import express from 'express'
 import { authRouter } from './modules/auth/auth.routes.js'
+import { createDepartmentRouter } from './modules/departments/departmentRoutes.js'
 import { createEmployeeRouter } from './modules/employees/index.js'
 import { authenticate, authorize } from './shared/middleware/auth.js'
 import { createLeaveRouter } from './modules/leaves/leaveRoutes.js'
@@ -21,15 +22,19 @@ app.use(
 )
 app.use(express.json())
 
-app.get('/api/health', (_request, response) => {
-  response.status(200).json({ status: 'ok', service: 'employeehub-api' })
-})
-
 app.use('/api/auth', authRouter)
+app.use(
+  '/api/departments',
+  createDepartmentRouter({ authenticate, authorize }),
+)
 app.use(
   '/api/employees',
   createEmployeeRouter({ authenticate, authorize, hashPassword }),
 )
 app.use('/api/leaves', createLeaveRouter({ authenticate, authorize }))
+
+app.get('/api/health', (_request, response) => {
+  response.status(200).json({ status: 'ok', service: 'employeehub-api' })
+})
 
 export default app
