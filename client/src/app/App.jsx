@@ -1,5 +1,6 @@
 import { BriefcaseBusiness, LogOut } from 'lucide-react'
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import { Link, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import { EmployeesPage } from '../features/employees/index.js'
 import { LoginPage, ProtectedRoute, useAuth } from '../features/auth/index.js'
 import LeaveManagement from '../features/leaves/LeaveManagement.jsx'
 import './App.css'
@@ -42,6 +43,7 @@ function AdminDashboard() {
       <h1>Admin dashboard</h1>
       <p>Welcome, {user.name}</p>
       <span>{user.email}</span>
+      <Link to="/employees">Manage employees</Link>
       <SignOutButton />
     </main>
   )
@@ -75,6 +77,14 @@ function App() {
         element={
           <ProtectedRoute allowedRoles={['ADMIN']}>
             <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/employees"
+        element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <EmployeesPage />
           </ProtectedRoute>
         }
       />
