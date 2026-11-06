@@ -1,14 +1,27 @@
-import { BriefcaseBusiness } from 'lucide-react'
-import './App.css'
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { LoginPage, ProtectedRoute, useAuth } from '../features/auth/index.js'
+import DepartmentManagement from '../features/departments/index.js'
+
+function DepartmentManagementRoute() {
+  const { user } = useAuth()
+  return <DepartmentManagement canManage={user?.role === 'ADMIN'} />
+}
 
 function App() {
   return (
-    <main className="app-shell">
-      <BriefcaseBusiness aria-hidden="true" size={40} />
-      <h1>EmployeeHub</h1>
-      <p>Employee Management System</p>
-      <span>Project foundation is ready for module development.</span>
-    </main>
+    <Routes>
+      <Route path="/" element={<Navigate to="/departments" replace />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/departments"
+        element={(
+          <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+            <DepartmentManagementRoute />
+          </ProtectedRoute>
+        )}
+      />
+      <Route path="*" element={<Navigate to="/departments" replace />} />
+    </Routes>
   )
 }
 
