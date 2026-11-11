@@ -54,6 +54,16 @@ Authentication is available at `/api/auth`; the frontend provides `/login`,
 `/api/leaves` and protected frontend routes use the AuthContext JWT. Sign in
 with an active account to access the employee leave page.
 
+The Attendance module is available at `/api/attendance` and `/attendance`.
+Employees can record their own punches and request corrections; admins can
+review all attendance, approve corrections, manage holidays, and view summary
+reports. Attendance work dates use Asia/Kolkata. Keep
+`ATTENDANCE_SHIFT_START` / `ATTENDANCE_GRACE_MINUTES` in the server environment
+aligned with `VITE_ATTENDANCE_SHIFT_START` / `VITE_ATTENDANCE_GRACE_MINUTES` in
+the client environment; defaults are 09:00 and 15 minutes. Employee endpoints
+include `/mine`, `/mine/corrections`, `/check-in`, and `/check-out`; admin
+endpoints include attendance reports, correction review, and holiday management.
+
 To create a separate demo department, employee account, and three leave
 requests, run:
 

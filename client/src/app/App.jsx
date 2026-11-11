@@ -9,6 +9,7 @@ import {
 import DepartmentManagement from '../features/departments/index.js'
 import { EmployeesPage } from '../features/employees/index.js'
 import LeaveManagement from '../features/leaves/LeaveManagement.jsx'
+import { AttendancePage } from '../features/attendance/index.js'
 import AppLayout from './AppLayout.jsx'
 import './App.css'
 import PlaceholderPage from './PlaceholderPage.jsx'
@@ -79,6 +80,14 @@ function App() {
           element={(
             <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
               <LeaveManagement />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/attendance"
+          element={(
+            <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+              <AttendancePage />
             </ProtectedRoute>
           )}
         />
