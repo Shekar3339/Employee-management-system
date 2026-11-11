@@ -12,13 +12,14 @@ import LeaveManagement from '../features/leaves/LeaveManagement.jsx'
 import AppLayout from './AppLayout.jsx'
 import './App.css'
 import PlaceholderPage from './PlaceholderPage.jsx'
+import EmployeeProfilePage from '../features/employees/EmployeeProfilePage.jsx'
 
 function HomeRedirect() {
-  const { isAuthenticated, user } = useAuth()
+  const { isAuthenticated } = useAuth()
 
   if (!isAuthenticated) return <Navigate replace to="/login" />
 
-  return <Navigate replace to={user.role === 'ADMIN' ? '/dashboard' : '/profile'} />
+  return <Navigate replace to="/dashboard" />
 }
 
 function AuthenticatedLayout() {
@@ -34,17 +35,6 @@ function DashboardRoute() {
 function DepartmentManagementRoute() {
   const { user } = useAuth()
   return <DepartmentManagement canManage={user.role === 'ADMIN'} />
-}
-
-function ProfilePage() {
-  const { user } = useAuth()
-
-  return (
-    <PlaceholderPage
-      description={`Signed in as ${user.email}. Your profile feature is awaiting its module owner.`}
-      title={user.name}
-    />
-  )
 }
 
 function App() {
@@ -63,7 +53,7 @@ function App() {
         <Route
           path="/dashboard"
           element={(
-            <ProtectedRoute allowedRoles={['ADMIN']}>
+            <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
               <DashboardRoute />
             </ProtectedRoute>
           )}
@@ -87,7 +77,7 @@ function App() {
         <Route
           path="/leaves"
           element={(
-            <ProtectedRoute allowedRoles={['EMPLOYEE']}>
+            <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
               <LeaveManagement />
             </ProtectedRoute>
           )}
@@ -96,7 +86,7 @@ function App() {
           path="/profile"
           element={(
             <ProtectedRoute allowedRoles={['EMPLOYEE']}>
-              <ProfilePage />
+              <EmployeeProfilePage />
             </ProtectedRoute>
           )}
         />

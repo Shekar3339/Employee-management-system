@@ -13,6 +13,11 @@ export async function getEmployee(id) {
   return response.data.data
 }
 
+export async function getCurrentEmployeeProfile() {
+  const response = await apiClient.get(`${employeePath}/me`)
+  return response.data.data
+}
+
 export async function createEmployee(employee) {
   const response = await apiClient.post(employeePath, employee)
   return response.data.data

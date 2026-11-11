@@ -8,6 +8,9 @@ import {
   XCircle,
 } from 'lucide-react'
 import apiClient from '../../shared/api/client.js'
+import { useAuth } from '../auth/auth-context.js'
+import AdminLeaveManagement from './AdminLeaveManagement.jsx'
+import { formatLeaveDate, getApiValidationMessage, getLeaveErrorMessage } from './leaveUtils.js'
 import { normalizeLeaveForm, validateLeaveForm } from './leaveValidation.js'
 import './LeaveManagement.css'
 
@@ -18,44 +21,12 @@ const initialForm = {
   reason: '',
 }
 
-function formatDate(value) {
-  if (!value) return '—'
-  return new Intl.DateTimeFormat(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date(value))
-}
-
-function getErrorMessage(error, fallback) {
-  if (error.response?.status === 401) {
-    return 'Sign in is required. Please sign in again, then refresh this page.'
-  }
-  if (error.response?.status === 403) {
-    return 'Your account does not have permission to use this action.'
-  }
-  if (error.response?.data?.message) return error.response.data.message
-  if (error.response?.status === 404) {
-    return 'Leave service endpoint not found. Check that the backend is running the latest code.'
-  }
-  if (error.response) {
-    return `Leave service returned HTTP ${error.response.status}.`
-  }
-  if (error.request) {
-    return 'Cannot reach the leave service. Check that the backend is running and configured.'
-  }
-  return error.message || fallback
-}
-
-function getApiValidationMessage(error) {
-  const errors = error.response?.data?.errors
-  return Array.isArray(errors) && errors.length > 0 ? errors.join(' ') : null
-}
-
-function LeaveManagement() {
+function EmployeeLeaveManagement() {
   const [leaves, setLeaves] = useState([])
   const [form, setForm] = useState(initialForm)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
+  const [reloadKey, setReloadKey] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
@@ -67,13 +38,12 @@ function LeaveManagement() {
     async function loadLeaves() {
       try {
         const response = await apiClient.get('/leaves/mine')
-        if (active) setLeaves(response.data.data)
-      } catch (error) {
         if (active) {
-          setErrorMessage(
-            getErrorMessage(error, 'Could not load your leave requests.'),
-          )
+          setLeaves(response.data.data)
+          setLoadError('')
         }
+      } catch (error) {
+        if (active) setLoadError(getLeaveErrorMessage(error, 'Could not load your leave requests.'))
       } finally {
         if (active) setLoading(false)
       }
@@ -83,7 +53,7 @@ function LeaveManagement() {
     return () => {
       active = false
     }
-  }, [])
+  }, [reloadKey])
 
   const summary = useMemo(
     () => ({
@@ -100,6 +70,12 @@ function LeaveManagement() {
     setFieldErrors((current) => ({ ...current, [name]: undefined }))
     setErrorMessage('')
     setSuccessMessage('')
+  }
+
+  function retryLoad() {
+    setLoading(true)
+    setLoadError('')
+    setReloadKey((currentKey) => currentKey + 1)
   }
 
   async function submitRequest(event) {
@@ -120,17 +96,18 @@ function LeaveManagement() {
     try {
       const response = await apiClient.post('/leaves', normalizedForm)
       setLeaves((current) => [response.data.data, ...current])
+      setLoadError('')
       setForm(initialForm)
       setSuccessMessage('Your leave request has been submitted.')
     } catch (error) {
-      setErrorMessage(getApiValidationMessage(error) || getErrorMessage(error, 'Could not submit your leave request.'))
+      setErrorMessage(getApiValidationMessage(error) || getLeaveErrorMessage(error, 'Could not submit your leave request.'))
     } finally {
       setSubmitting(false)
     }
   }
 
   return (
-    <main className="leave-page">
+    <section className="leave-page">
       <header className="leave-header">
         <div className="leave-brand">
           <div className="leave-brand-icon">
@@ -289,7 +266,13 @@ function LeaveManagement() {
             <span className="leave-count">{summary.total}</span>
           </div>
           {loading ? (
-            <p className="leave-empty-state">Loading your requests…</p>
+            <p className="leave-empty-state" role="status">Loading your requests…</p>
+          ) : loadError ? (
+            <div className="leave-empty-state" role="alert">
+              <p>Could not load your requests</p>
+              <span>{loadError}</span>
+              <button className="leave-secondary-button" type="button" onClick={retryLoad}>Try again</button>
+            </div>
           ) : leaves.length === 0 ? (
             <div className="leave-empty-state">
               <CalendarDays aria-hidden="true" size={23} />
@@ -305,6 +288,7 @@ function LeaveManagement() {
                     <th scope="col">Dates</th>
                     <th scope="col">Reason</th>
                     <th scope="col">Status</th>
+                    <th scope="col">Review details</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -312,9 +296,9 @@ function LeaveManagement() {
                     <tr key={leave._id}>
                       <td className="leave-type-cell">{leave.leaveType}</td>
                       <td>
-                        {formatDate(leave.startDate)}
+                        {formatLeaveDate(leave.startDate)}
                         <span className="leave-date-separator"> to </span>
-                        {formatDate(leave.endDate)}
+                        {formatLeaveDate(leave.endDate)}
                       </td>
                       <td className="leave-reason-cell">{leave.reason}</td>
                       <td>
@@ -324,6 +308,12 @@ function LeaveManagement() {
                           {leave.status?.toLowerCase() || 'unknown'}
                         </span>
                       </td>
+                      <td className="leave-review-details">
+                        {leave.reviewedBy?.name ? <span>{leave.reviewedBy.name}</span> : null}
+                        {leave.reviewedAt
+                          ? <span>{formatLeaveDate(leave.reviewedAt)}</span>
+                          : <span>{leave.status === 'PENDING' ? 'Awaiting review' : 'Review date unavailable'}</span>}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -332,8 +322,13 @@ function LeaveManagement() {
           )}
         </section>
       </div>
-    </main>
+    </section>
   )
+}
+
+function LeaveManagement() {
+  const { user } = useAuth()
+  return user.role === 'ADMIN' ? <AdminLeaveManagement /> : <EmployeeLeaveManagement />
 }
 
 export default LeaveManagement

@@ -319,6 +319,23 @@
   opacity: 0.65;
 }
 
+.leave-secondary-button {
+  min-height: 38px;
+  border: 1px solid #dfe4ed;
+  border-radius: 8px;
+  padding: 0 0.9rem;
+  color: #293650;
+  background: #fff;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.leave-secondary-button:hover {
+  background: #f5f7fb;
+}
+
 .leave-history {
   padding-bottom: 0;
 }
@@ -399,6 +416,61 @@
   max-width: 230px;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.leave-review-details span,
+.leave-employee-cell span {
+  display: block;
+  margin-top: 0.2rem;
+  color: #8992a4;
+  font-size: 0.73rem;
+}
+
+.leave-employee-cell strong {
+  color: #293650;
+}
+
+.leave-admin-table {
+  min-width: 1040px;
+}
+
+.leave-actions-cell {
+  min-width: 150px;
+}
+
+.leave-review-button {
+  min-height: 32px;
+  margin: 0 0.25rem 0.25rem 0;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 0 0.55rem;
+  background: #fff;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.leave-review-button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.leave-review-button--approve {
+  border-color: #bde5cd;
+  color: #218352;
+}
+
+.leave-review-button--reject {
+  border-color: #f0c5c3;
+  color: #b34a46;
+}
+
+.leave-reviewing {
+  color: #8992a4;
+  font-size: 0.7rem;
 }
 
 .leave-date-separator {
