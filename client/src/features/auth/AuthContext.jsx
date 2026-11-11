@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import apiClient from '../../shared/api/client.js'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import apiClient, { setSessionRefreshHandler } from '../../shared/api/client.js'
 import {
   clearToken,
   getToken,
@@ -14,13 +14,24 @@ function getErrorMessage(error, fallback) {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [token, setToken] = useState(getToken)
-  const [loading, setLoading] = useState(Boolean(getToken()))
+  const [loading, setLoading] = useState(true)
+  const sessionRestoreStarted = useRef(false)
 
-  const logout = useCallback(() => {
+  const clearSession = useCallback(() => {
     clearToken()
     setToken(null)
     setUser(null)
   }, [])
+
+  const logout = useCallback(async () => {
+    try {
+      await apiClient.post('/auth/logout')
+    } catch {
+      // Local state must still be cleared when the server is unavailable.
+    } finally {
+      clearSession()
+    }
+  }, [clearSession])
 
   const login = useCallback(async (email, password) => {
     setLoading(true)
@@ -44,40 +55,53 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  const refreshCurrentUser = useCallback(async () => {
-    if (!token) {
-      return null
-    }
-
-    setLoading(true)
+  const refreshCurrentUser = useCallback(async ({ quiet = false } = {}) => {
+    if (!quiet) setLoading(true)
 
     try {
-      const response = await apiClient.get('/auth/me')
-      const nextUser = response.data?.data?.user
+      const response = await apiClient.post('/auth/refresh')
+      const { token: nextToken, user: nextUser } = response.data?.data ?? {}
 
-      if (!response.data?.success || !nextUser) {
+      if (!response.data?.success || !nextToken || !nextUser) {
         throw new Error('Unable to refresh your session.')
       }
 
+      storeToken(nextToken)
+      setToken(nextToken)
       setUser(nextUser)
       return nextUser
     } catch (error) {
-      logout()
+      clearSession()
       throw new Error(getErrorMessage(error, 'Your session has expired. Please sign in again.'), { cause: error })
     } finally {
-      setLoading(false)
+      if (!quiet) setLoading(false)
     }
-  }, [logout, token])
+  }, [clearSession])
+
+  const changePassword = useCallback(async (currentPassword, newPassword) => {
+    const response = await apiClient.post('/auth/change-password', { currentPassword, newPassword })
+    const { token: nextToken, user: nextUser } = response.data?.data ?? {}
+    if (!response.data?.success || !nextToken || !nextUser) {
+      throw new Error('Unable to change password. Please try again.')
+    }
+    storeToken(nextToken)
+    setToken(nextToken)
+    setUser(nextUser)
+    return nextUser
+  }, [])
 
   useEffect(() => {
-    if (!token || user) return
+    setSessionRefreshHandler(() => refreshCurrentUser({ quiet: true }))
 
-    const restoreTimer = window.setTimeout(() => {
-      refreshCurrentUser().catch(() => undefined)
-    }, 0)
+    return () => setSessionRefreshHandler(null)
+  }, [refreshCurrentUser])
 
-    return () => window.clearTimeout(restoreTimer)
-  }, [refreshCurrentUser, token, user])
+  useEffect(() => {
+    if (user || sessionRestoreStarted.current) return
+    sessionRestoreStarted.current = true
+
+    refreshCurrentUser().catch(() => undefined)
+  }, [refreshCurrentUser, user])
 
   const value = useMemo(() => ({
     user,
@@ -87,7 +111,8 @@ export function AuthProvider({ children }) {
     login,
     logout,
     refreshCurrentUser,
-  }), [login, loading, logout, refreshCurrentUser, token, user])
+    changePassword,
+  }), [changePassword, login, loading, logout, refreshCurrentUser, token, user])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

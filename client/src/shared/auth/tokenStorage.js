@@ -1,13 +1,13 @@
-const TOKEN_KEY = 'employeehub.accessToken'
+let accessToken = null
 
 export function getToken() {
-  return sessionStorage.getItem(TOKEN_KEY)
+  return accessToken
 }
 
 export function setToken(token) {
-  sessionStorage.setItem(TOKEN_KEY, token)
+  accessToken = token
 }
 
 export function clearToken() {
-  sessionStorage.removeItem(TOKEN_KEY)
+  accessToken = null
 }

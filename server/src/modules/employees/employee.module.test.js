@@ -3,10 +3,35 @@ import { describe, it } from 'node:test'
 import mongoose from 'mongoose'
 import { createEmployeeRouter } from './employee.routes.js'
 import { createEmployeeController } from './employee.controller.js'
-import { createEmployeeService } from './employee.service.js'
+import { createEmployeeService, validateEmployeeFields } from './employee.service.js'
 import { departmentsFromResponse } from '../../../../client/src/features/employees/departmentResponse.js'
 
 const departmentId = new mongoose.Types.ObjectId().toString()
+
+it('rejects malformed phone numbers, invalid calendar dates, and future joining dates', () => {
+  const futureDate = new Date()
+  futureDate.setDate(futureDate.getDate() + 1)
+  const errors = validateEmployeeFields({
+    name: 'Avery Smith',
+    email: 'avery@example.com',
+    phone: 'not-a-phone',
+    designation: 'Developer',
+    departmentId,
+    joiningDate: futureDate.toISOString().slice(0, 10),
+  })
+
+  assert.equal(errors.some((error) => error.field === 'phone'), true)
+  assert.equal(errors.some((error) => error.field === 'joiningDate'), true)
+
+  const invalidDateErrors = validateEmployeeFields({
+    name: 'Avery Smith',
+    email: 'avery@example.com',
+    designation: 'Developer',
+    departmentId,
+    joiningDate: '2024-02-31',
+  })
+  assert.equal(invalidDateErrors.some((error) => error.field === 'joiningDate'), true)
+})
 
 function matches(record, filter = {}) {
   return Object.entries(filter).every(([key, value]) => {

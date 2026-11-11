@@ -8,6 +8,7 @@ import {
   getDepartments,
   updateDepartment,
 } from '../services/departmentService.js'
+import { normalizeDepartmentForm, validateDepartmentForm } from '../departmentValidation.js'
 import './DepartmentManagement.css'
 
 const emptyForm = { name: '', description: '' }
@@ -43,6 +44,7 @@ function DepartmentManagement({ canManage = false }) {
   const [editingId, setEditingId] = useState('')
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
   const [notice, setNotice] = useState('')
   const [noticeIsError, setNoticeIsError] = useState(false)
 
@@ -77,22 +79,25 @@ function DepartmentManagement({ canManage = false }) {
     setForm(emptyForm)
     setEditingId('')
     setFormError('')
+    setFieldErrors({})
   }
 
   async function handleSubmit(event) {
     event.preventDefault()
-    const name = form.name.trim()
-    if (!name) {
-      setFormError('Enter a department name.')
+    const payload = normalizeDepartmentForm(form)
+    const validationErrors = validateDepartmentForm(payload)
+    if (Object.keys(validationErrors).length > 0) {
+      setFieldErrors(validationErrors)
+      setFormError('Please correct the highlighted fields.')
       return
     }
 
     setSaving(true)
     setFormError('')
+    setFieldErrors({})
     setNotice('')
     setNoticeIsError(false)
     try {
-      const payload = { name, description: form.description.trim() }
       if (editingId) {
         await updateDepartment(editingId, payload)
         setNotice('Department updated successfully.')
@@ -103,6 +108,12 @@ function DepartmentManagement({ canManage = false }) {
       resetForm()
       await loadDepartments()
     } catch (error) {
+      const apiErrors = error.response?.data?.errors || []
+      setFieldErrors(Object.fromEntries(
+        apiErrors
+          .filter((item) => item?.field && item?.message)
+          .map((item) => [item.field, item.message]),
+      ))
       setFormError(getErrorMessage(error))
     } finally {
       setSaving(false)
@@ -113,9 +124,17 @@ function DepartmentManagement({ canManage = false }) {
     setForm({ name: department.name, description: department.description || '' })
     setEditingId(department._id)
     setFormError('')
+    setFieldErrors({})
     setNotice('')
     setNoticeIsError(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function handleFormChange(nextForm) {
+    const changedField = Object.keys(nextForm).find((key) => nextForm[key] !== form[key])
+    setForm(nextForm)
+    if (changedField) setFieldErrors((current) => ({ ...current, [changedField]: undefined }))
+    setFormError('')
   }
 
   async function handleDelete(department) {
@@ -152,9 +171,10 @@ function DepartmentManagement({ canManage = false }) {
         <DepartmentForm
           editing={Boolean(editingId)}
           error={formError}
+          fieldErrors={fieldErrors}
           form={form}
           onCancel={resetForm}
-          onChange={setForm}
+          onChange={handleFormChange}
           onSubmit={handleSubmit}
           saving={saving}
         />

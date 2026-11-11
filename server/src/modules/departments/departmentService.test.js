@@ -63,6 +63,12 @@ test('requires a non-empty department name', async () => {
   await assert.rejects(service.create({ name: '  ' }), (error) => error.statusCode === 400)
 })
 
+test('rejects department names and descriptions beyond the supported limits', async () => {
+  const { service } = makeService()
+  await assert.rejects(service.create({ name: 'x'.repeat(101) }), (error) => error.statusCode === 400)
+  await assert.rejects(service.create({ name: 'Engineering', description: 'x'.repeat(501) }), (error) => error.statusCode === 400)
+})
+
 test('updates a department with validators enabled', async () => {
   const { service, updated } = makeService()
   await service.update(id, { name: 'Product', description: '' })

@@ -35,11 +35,14 @@ function makeResponse() {
 }
 
 function controllerFor(users) {
+  const RefreshSessionModel = {
+    create: async () => ({ _id: { toString: () => 'refresh-session-id' } }),
+  }
   const UserModel = {
     findOne: async ({ email }) => users.find((user) => user.email === email) ?? null,
     findById: async (id) => users.find((user) => user._id.toString() === id) ?? null,
   }
-  return createAuthController({ service: createAuthService({ UserModel }) })
+  return createAuthController({ service: createAuthService({ UserModel, RefreshSessionModel }) })
 }
 
 async function runMiddleware(middleware, request) {
@@ -72,6 +75,40 @@ test('successful EMPLOYEE login returns the linked employee ID', async () => {
   )
   assert.equal(response.statusCode, 200)
   assert.equal(response.body.data.user.employeeId, '507f191e810c19729de860ea')
+})
+
+test('refresh rotates the refresh token and returns a new access token', async () => {
+  const sessions = []
+  const RefreshSessionModel = {
+    async create(data) {
+      const session = {
+        ...data,
+        _id: { toString: () => `session-${sessions.length + 1}` },
+        revokedAt: null,
+        async save() {},
+      }
+      sessions.push(session)
+      return session
+    },
+    async findOne(filter) {
+      return sessions.find((session) => session.tokenHash === filter.tokenHash && String(session.userId) === String(filter.userId)) ?? null
+    },
+    async updateMany() {},
+  }
+  const user = makeUser()
+  const service = createAuthService({
+    UserModel: {
+      findOne: async () => user,
+      findById: async () => user,
+    },
+    RefreshSessionModel,
+  })
+
+  const loginResult = await service.login({ email: 'admin@example.com', password })
+  const refreshResult = await service.refresh(loginResult.refreshToken)
+  assert.notEqual(refreshResult.refreshToken, loginResult.refreshToken)
+  assert.notEqual(refreshResult.token, loginResult.token)
+  assert.ok(sessions[0].revokedAt)
 })
 
 test('invalid password returns generic 401', async () => {

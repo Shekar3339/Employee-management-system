@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { DashboardPage } from '../features/dashboard/index.js'
 import {
   LoginPage,
+  ChangePasswordPage,
   ProtectedRoute,
   useAuth,
 } from '../features/auth/index.js'
@@ -21,8 +22,8 @@ function HomeRedirect() {
 }
 
 function AuthenticatedLayout() {
-  const { user } = useAuth()
-  return <AppLayout user={user} />
+  const { user, logout } = useAuth()
+  return <AppLayout user={user} onLogout={logout} />
 }
 
 function DashboardRoute() {
@@ -51,6 +52,7 @@ function App() {
     <Routes>
       <Route path="/" element={<HomeRedirect />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/change-password" element={<ProtectedRoute><ChangePasswordPage /></ProtectedRoute>} />
       <Route
         element={(
           <ProtectedRoute>
