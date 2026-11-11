@@ -4,6 +4,7 @@ import { authRouter } from './modules/auth/auth.routes.js'
 import { createDashboardRouter } from './modules/dashboard/dashboard.routes.js'
 import { createDepartmentRouter } from './modules/departments/departmentRoutes.js'
 import { createEmployeeRouter } from './modules/employees/index.js'
+import { createAttendanceRouter } from './modules/attendance/attendanceRoutes.js'
 import { createLeaveRouter } from './modules/leaves/leaveRoutes.js'
 import { authenticate, authorize } from './shared/middleware/auth.js'
 import { hashPassword } from './shared/utils/password.js'
@@ -34,6 +35,7 @@ app.use(
   '/api/employees',
   createEmployeeRouter({ authenticate, authorize, hashPassword }),
 )
+app.use('/api/attendance', createAttendanceRouter({ authenticateMiddleware: authenticate, authorizeMiddleware: authorize }))
 app.use('/api/leaves', createLeaveRouter({ authenticate, authorize }))
 
 app.get('/api/health', (_request, response) => {
