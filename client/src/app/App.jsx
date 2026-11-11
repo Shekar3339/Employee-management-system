@@ -1,59 +1,113 @@
-import { Navigate, Route, Routes, useOutletContext } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { DashboardPage } from '../features/dashboard/index.js'
-import ProtectedRoute from '../shared/components/ProtectedRoute.jsx'
+import {
+  LoginPage,
+  ProtectedRoute,
+  useAuth,
+} from '../features/auth/index.js'
+import DepartmentManagement from '../features/departments/index.js'
+import { EmployeesPage } from '../features/employees/index.js'
+import LeaveManagement from '../features/leaves/LeaveManagement.jsx'
 import AppLayout from './AppLayout.jsx'
 import './App.css'
 import PlaceholderPage from './PlaceholderPage.jsx'
 
-// The Authentication module will supply this contract and its state provider.
-// Keeping it null makes every protected route fail closed until then.
-const currentUser = null
+function HomeRedirect() {
+  const { isAuthenticated, user } = useAuth()
+
+  if (!isAuthenticated) return <Navigate replace to="/login" />
+
+  return <Navigate replace to={user.role === 'ADMIN' ? '/dashboard' : '/profile'} />
+}
+
+function AuthenticatedLayout() {
+  const { user } = useAuth()
+  return <AppLayout user={user} />
+}
 
 function DashboardRoute() {
-  const { user } = useOutletContext()
+  const { user } = useAuth()
   return <DashboardPage user={user} />
 }
 
-function LoginPlaceholder() {
+function DepartmentManagementRoute() {
+  const { user } = useAuth()
+  return <DepartmentManagement canManage={user.role === 'ADMIN'} />
+}
+
+function ProfilePage() {
+  const { user } = useAuth()
+
   return (
-    <main className="public-page">
-      <h1>EmployeeHub</h1>
-      <p>The Authentication module will provide the login experience.</p>
-    </main>
+    <PlaceholderPage
+      description={`Signed in as ${user.email}. Your profile feature is awaiting its module owner.`}
+      title={user.name}
+    />
   )
 }
 
 function App() {
   return (
     <Routes>
-      <Route element={<ProtectedRoute user={currentUser} />}>
-        <Route element={<AppLayout user={currentUser} />}>
-          <Route
-            element={<ProtectedRoute allowedRoles={['ADMIN']} user={currentUser} />}
-          >
-            <Route path="/dashboard" element={<DashboardRoute />} />
-            <Route
-              path="/employees"
-              element={<PlaceholderPage description="Employee Management is awaiting its module owner." title="Employees" />}
-            />
-            <Route
-              path="/departments"
-              element={<PlaceholderPage description="Department Management is awaiting its module owner." title="Departments" />}
-            />
-          </Route>
-          <Route
-            path="/leaves"
-            element={<PlaceholderPage description="Leave Management is awaiting its module owner." title="Leaves" />}
-          />
-          <Route
-            path="/profile"
-            element={<PlaceholderPage description="Profile integration is awaiting the Authentication module." title="Profile" />}
-          />
-        </Route>
+      <Route path="/" element={<HomeRedirect />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route
+        element={(
+          <ProtectedRoute>
+            <AuthenticatedLayout />
+          </ProtectedRoute>
+        )}
+      >
+        <Route
+          path="/dashboard"
+          element={(
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <DashboardRoute />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/employees"
+          element={(
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <EmployeesPage />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/departments"
+          element={(
+            <ProtectedRoute allowedRoles={['ADMIN', 'EMPLOYEE']}>
+              <DepartmentManagementRoute />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/leaves"
+          element={(
+            <ProtectedRoute allowedRoles={['EMPLOYEE']}>
+              <LeaveManagement />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/profile"
+          element={(
+            <ProtectedRoute allowedRoles={['EMPLOYEE']}>
+              <ProfilePage />
+            </ProtectedRoute>
+          )}
+        />
       </Route>
-      <Route path="/login" element={<LoginPlaceholder />} />
-      <Route path="/" element={<Navigate replace to="/dashboard" />} />
-      <Route path="*" element={<PlaceholderPage description="The page you requested does not exist." title="Page not found" />} />
+      <Route
+        path="*"
+        element={(
+          <PlaceholderPage
+            description="The page you requested does not exist."
+            title="Page not found"
+          />
+        )}
+      />
     </Routes>
   )
 }

@@ -1,12 +1,33 @@
-# Frontend routes
+# EmployeeHub Route Map
+
+All backend routes are prefixed with `/api`.
+
+## Frontend routes
 
 | Route | Owner | Access | Current state |
 | --- | --- | --- | --- |
-| `/login` | Authentication | Public | Temporary boundary pending Authentication module |
-| `/dashboard` | Team Lead | `ADMIN` | Dashboard page implemented; requires Authentication integration |
-| `/employees` | Employee Management | `ADMIN` | Temporary placeholder |
-| `/departments` | Department Management | `ADMIN` | Temporary placeholder |
-| `/leaves` | Leave Management | Authenticated user | Temporary placeholder |
-| `/profile` | Authentication | Authenticated user | Temporary placeholder |
+| `/login` | Authentication | Public | Implemented |
+| `/dashboard` | Team Lead | `ADMIN` | Implemented |
+| `/employees` | Employee Management | `ADMIN` | Implemented |
+| `/departments` | Department Management | Authenticated user | Implemented; management actions are `ADMIN` only |
+| `/leaves` | Leave Management | `EMPLOYEE` | Implemented |
+| `/profile` | Authentication | `EMPLOYEE` | Temporary profile boundary |
 
-The Team Lead owns central route configuration, shared layout, protected-route boundaries, navigation, loading, and error components. The Authentication module must supply the authenticated user state and enforce role-aware route access.
+The Team Lead owns central route configuration, shared layout, and integration. Authentication owns authenticated user state and role-aware route boundaries.
+
+## Backend routes
+
+| Method | Route | Access |
+| --- | --- | --- |
+| `POST` | `/api/auth/login` | Public |
+| `GET` | `/api/auth/me` | Authenticated |
+| `GET` | `/api/dashboard/stats` | `ADMIN` |
+| `GET`, `POST`, `PUT`, `DELETE` | `/api/departments` | Authenticated list; `ADMIN` writes |
+| `GET`, `POST` | `/api/employees` | `ADMIN` |
+| `GET` | `/api/employees/me` | `EMPLOYEE` |
+| `GET`, `PUT` | `/api/employees/:id` | `ADMIN` |
+| `PATCH` | `/api/employees/:id/status` | `ADMIN` |
+| `POST` | `/api/leaves` | `EMPLOYEE` |
+| `GET` | `/api/leaves/mine` | `EMPLOYEE` |
+| `GET` | `/api/leaves` | `ADMIN` |
+| `PATCH` | `/api/leaves/:id/status` | `ADMIN` |
