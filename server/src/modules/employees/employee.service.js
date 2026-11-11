@@ -2,6 +2,26 @@ import { randomBytes } from 'node:crypto'
 import mongoose from 'mongoose'
 import { Department, Employee, User } from '../../shared/models/index.js'
 
+const PHONE_PATTERN = /^[0-9+()\-\s]{7,20}$/
+
+function isValidJoiningDate(value) {
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return false
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split('-').map(Number)
+    if (
+      parsed.getUTCFullYear() !== year
+      || parsed.getUTCMonth() !== month - 1
+      || parsed.getUTCDate() !== day
+    ) return false
+  }
+
+  const today = new Date()
+  today.setHours(23, 59, 59, 999)
+  return parsed <= today
+}
+
 const isObjectId = (value) => mongoose.isValidObjectId(value)
 
 function escapeRegex(value) {
@@ -44,11 +64,14 @@ function validateEmployeeFields(input, { partial = false } = {}) {
   if (input.email !== undefined && !/^\S+@\S+\.\S+$/.test(input.email)) {
     errors.push({ field: 'email', message: 'A valid email is required' })
   }
+  if (typeof input.phone === 'string' && input.phone.trim() && !PHONE_PATTERN.test(input.phone.trim())) {
+    errors.push({ field: 'phone', message: 'A valid phone number is required' })
+  }
   if (input.departmentId !== undefined && !isObjectId(input.departmentId)) {
     errors.push({ field: 'departmentId', message: 'A valid department ID is required' })
   }
-  if (input.joiningDate !== undefined && Number.isNaN(Date.parse(input.joiningDate))) {
-    errors.push({ field: 'joiningDate', message: 'A valid joining date is required' })
+  if (input.joiningDate !== undefined && !isValidJoiningDate(input.joiningDate)) {
+    errors.push({ field: 'joiningDate', message: 'Joining date must be valid and cannot be in the future' })
   }
 
   return errors
@@ -59,7 +82,10 @@ function employeePayload(input) {
   for (const field of ['name', 'email', 'phone', 'designation', 'departmentId', 'joiningDate']) {
     if (input[field] !== undefined) payload[field] = input[field]
   }
-  if (payload.email) payload.email = payload.email.trim().toLowerCase()
+  for (const field of ['name', 'email', 'phone', 'designation']) {
+    if (typeof payload[field] === 'string') payload[field] = payload[field].trim()
+  }
+  if (payload.email) payload.email = payload.email.toLowerCase()
   if (payload.name) payload.name = payload.name.trim()
   if (payload.joiningDate) payload.joiningDate = new Date(payload.joiningDate)
   return payload
@@ -92,6 +118,7 @@ export function createEmployeeService({ hashPassword, models = {}, database = mo
       role: 'EMPLOYEE',
       employeeId: null,
       isActive: true,
+      mustChangePassword: true,
     })
     if (session) await user.save({ session })
     else await user.save()
@@ -186,6 +213,7 @@ export function createEmployeeService({ hashPassword, models = {}, database = mo
           role: 'EMPLOYEE',
           employeeId: null,
           isActive: true,
+          mustChangePassword: true,
         })
         await user.save()
         userId = user._id

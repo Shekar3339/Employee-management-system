@@ -16,10 +16,21 @@ function normalizeDepartmentInput(input = {}) {
       { field: 'name', message: 'Department name is required.' },
     ])
   }
+  if (name.length > 100) {
+    throw new DepartmentError('Department name must be 100 characters or fewer.', 400, [
+      { field: 'name', message: 'Department name must be 100 characters or fewer.' },
+    ])
+  }
 
   if (input.description !== undefined && typeof input.description !== 'string') {
     throw new DepartmentError('Description must be a string.', 400, [
       { field: 'description', message: 'Description must be a string.' },
+    ])
+  }
+
+  if (typeof input.description === 'string' && input.description.trim().length > 500) {
+    throw new DepartmentError('Description must be 500 characters or fewer.', 400, [
+      { field: 'description', message: 'Description must be 500 characters or fewer.' },
     ])
   }
 

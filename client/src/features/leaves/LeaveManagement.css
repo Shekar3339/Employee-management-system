@@ -272,6 +272,18 @@
   box-shadow: 0 0 0 3px #edf1ff;
 }
 
+.leave-form input[aria-invalid='true'],
+.leave-form select[aria-invalid='true'],
+.leave-form textarea[aria-invalid='true'] {
+  border-color: #c94a45;
+}
+
+.leave-field-error {
+  color: #a63e3e;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
 .leave-form textarea {
   min-height: 82px;
   resize: vertical;

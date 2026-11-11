@@ -31,6 +31,8 @@
 .department-form input, .department-form textarea { width: 100%; border: 1px solid #dce2ea; border-radius: .65rem; padding: .75rem .85rem; color: var(--ink); font: inherit; font-weight: 450; outline: none; }
 .department-form textarea { resize: vertical; }
 .department-form input:focus, .department-form textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #3867d61a; }
+.department-form input[aria-invalid='true'], .department-form textarea[aria-invalid='true'] { border-color: #c7423a; }
+.department-field-error { color: #a33333; font-size: .75rem; font-weight: 600; }
 .department-form-actions { grid-column: 1 / -1; justify-content: flex-end; }
 .department-button.primary { border-color: var(--accent); background: var(--accent); color: white; }
 .department-button.secondary { background: #fff; }

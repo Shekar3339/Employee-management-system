@@ -12,11 +12,12 @@ function destinationFor(role) {
 
 export function LoginPage() {
   const navigate = useNavigate()
-  const { login, loading } = useAuth()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -33,12 +34,15 @@ export function LoginPage() {
     }
 
     setError('')
+    setSubmitting(true)
 
     try {
       const user = await login(normalizedEmail, password)
       navigate(destinationFor(user.role), { replace: true })
     } catch (loginError) {
       setError(loginError.message)
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -65,7 +69,7 @@ export function LoginPage() {
             onChange={(event) => setEmail(event.target.value)}
             autoComplete="email"
             inputMode="email"
-            disabled={loading}
+            disabled={submitting}
             required
           />
 
@@ -77,7 +81,7 @@ export function LoginPage() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               autoComplete="current-password"
-              disabled={loading}
+              disabled={submitting}
               required
             />
             <button
@@ -85,15 +89,15 @@ export function LoginPage() {
               className="auth-password-toggle"
               onClick={() => setShowPassword((visible) => !visible)}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
-              disabled={loading}
+              disabled={submitting}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
 
-          <button className="auth-submit" type="submit" disabled={loading}>
+          <button className="auth-submit" type="submit" disabled={submitting}>
             <LogIn aria-hidden="true" size={18} />
-            {loading ? 'Signing in…' : 'Sign in'}
+            {submitting ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
       </section>

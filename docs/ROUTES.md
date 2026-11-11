@@ -20,6 +20,9 @@ The Team Lead owns central route configuration, shared layout, and integration. 
 | Method | Route | Access |
 | --- | --- | --- |
 | `POST` | `/api/auth/login` | Public |
+| `POST` | `/api/auth/refresh` | Refresh-cookie session |
+| `POST` | `/api/auth/logout` | Refresh-cookie session |
+| `POST` | `/api/auth/change-password` | Authenticated |
 | `GET` | `/api/auth/me` | Authenticated |
 | `GET` | `/api/dashboard/stats` | `ADMIN` |
 | `GET`, `POST`, `PUT`, `DELETE` | `/api/departments` | Authenticated list; `ADMIN` writes |

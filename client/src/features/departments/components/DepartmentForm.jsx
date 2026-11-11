@@ -8,6 +8,7 @@ function DepartmentForm({
   editing,
   saving,
   error,
+  fieldErrors,
 }) {
   return (
     <section className="department-card department-form-card" aria-labelledby="department-form-title">
@@ -18,17 +19,20 @@ function DepartmentForm({
           <p>Department names must be unique.</p>
         </div>
       </div>
-      <form className="department-form" onSubmit={onSubmit}>
+      <form className="department-form" onSubmit={onSubmit} noValidate>
         <label>
           Department name <span aria-hidden="true">*</span>
           <input
             autoComplete="organization-title"
             maxLength={100}
             onChange={(event) => onChange({ ...form, name: event.target.value })}
-            placeholder="e.g. People & Culture"
+            placeholder="e.g. People & Culture or IT 101"
             required
+            aria-invalid={Boolean(fieldErrors.name)}
+            aria-describedby={fieldErrors.name ? 'department-name-error' : undefined}
             value={form.name}
           />
+          {fieldErrors.name && <span id="department-name-error" className="department-field-error">{fieldErrors.name}</span>}
         </label>
         <label>
           Description <span className="department-optional">Optional</span>
@@ -37,8 +41,11 @@ function DepartmentForm({
             onChange={(event) => onChange({ ...form, description: event.target.value })}
             placeholder="What does this department do?"
             rows={3}
+            aria-invalid={Boolean(fieldErrors.description)}
+            aria-describedby={fieldErrors.description ? 'department-description-error' : undefined}
             value={form.description}
           />
+          {fieldErrors.description && <span id="department-description-error" className="department-field-error">{fieldErrors.description}</span>}
         </label>
         {error && <p className="department-error" role="alert">{error}</p>}
         <div className="department-form-actions">

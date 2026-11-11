@@ -22,8 +22,8 @@ export function createAuthMiddleware({ UserModel = User, jwtClient = jwt } = {})
     if (!process.env.JWT_SECRET) return sendError(response, 500, 'Authentication service is unavailable')
 
     try {
-      const payload = jwtClient.verify(token, process.env.JWT_SECRET)
-      if (!payload.sub) return sendError(response, 401, 'Invalid or expired authentication token')
+      const payload = jwtClient.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] })
+      if (!payload.sub || (payload.type && payload.type !== 'access')) return sendError(response, 401, 'Invalid or expired authentication token')
 
       const user = await UserModel.findById(payload.sub)
       if (!user || !user.isActive) {
