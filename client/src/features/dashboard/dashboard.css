@@ -22,6 +22,29 @@
   color: #64748b;
 }
 
+.dashboard-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.dashboard-page__actions a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.625rem;
+  padding: 0 1rem;
+  color: #1d4ed8;
+  background: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.dashboard-page__actions a:hover {
+  background: #eff6ff;
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

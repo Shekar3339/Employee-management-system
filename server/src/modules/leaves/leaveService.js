@@ -92,14 +92,20 @@ export function createLeaveService({ LeaveModel, EmployeeModel }) {
       if (!employee) fail('Employee record not found', [], 404)
 
       return LeaveModel.find({ employeeId })
-        .select('leaveType startDate endDate reason status')
+        .select('leaveType startDate endDate reason status reviewedBy reviewedAt')
+        .populate({ path: 'reviewedBy', select: 'name email' })
         .sort({ createdAt: -1 })
         .lean()
     },
 
     async listAll() {
       return LeaveModel.find()
-        .populate({ path: 'employeeId', select: 'name email' })
+        .populate({
+          path: 'employeeId',
+          select: 'name email designation departmentId',
+          populate: { path: 'departmentId', select: 'name' },
+        })
+        .populate({ path: 'reviewedBy', select: 'name email' })
         .sort({ createdAt: -1 })
         .lean()
     },

@@ -4,10 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from './auth-context.js'
 import './auth.css'
 
-function destinationFor(role) {
-  return role === 'ADMIN' ? '/dashboard' : '/profile'
-}
-
 export function ChangePasswordPage() {
   const { changePassword } = useAuth()
   const navigate = useNavigate()
@@ -24,8 +20,8 @@ export function ChangePasswordPage() {
     setError('')
     setSubmitting(true)
     try {
-      const user = await changePassword(currentPassword, newPassword)
-      navigate(destinationFor(user.role), { replace: true })
+      await changePassword(currentPassword, newPassword)
+      navigate('/dashboard', { replace: true })
     } catch (requestError) {
       setError(requestError.response?.data?.message || requestError.message || 'Unable to change password.')
     } finally {

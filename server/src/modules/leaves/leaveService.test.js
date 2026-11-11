@@ -25,7 +25,7 @@ function makeService({ employee = { _id: employeeId }, leave = null } = {}) {
           return this
         },
         populate(options) {
-          calls.populated = options
+          calls.populated = [...(calls.populated ?? []), options]
           return this
         },
         sort(order) {
@@ -68,14 +68,23 @@ test('GET /api/leaves/mine filters to the authenticated employee and sorts newes
   const result = await service.listMine({ employeeId })
   assert.deepEqual(calls.filter, { employeeId })
   assert.deepEqual(calls.sort, { createdAt: -1 })
-  assert.match(calls.selected, /status/)
+  assert.match(calls.selected, /reviewedBy/)
+  assert.match(calls.selected, /reviewedAt/)
+  assert.deepEqual(calls.populated, [{ path: 'reviewedBy', select: 'name email' }])
   assert.equal(result[0].status, 'PENDING')
 })
 
-test('GET /api/leaves populates employee name/email and sorts newest first', async () => {
+test('GET /api/leaves populates employee and reviewer details and sorts newest first', async () => {
   const { service, calls } = makeService()
   await service.listAll()
-  assert.deepEqual(calls.populated, { path: 'employeeId', select: 'name email' })
+  assert.deepEqual(calls.populated, [
+    {
+      path: 'employeeId',
+      select: 'name email designation departmentId',
+      populate: { path: 'departmentId', select: 'name' },
+    },
+    { path: 'reviewedBy', select: 'name email' },
+  ])
   assert.deepEqual(calls.sort, { createdAt: -1 })
 })
 
